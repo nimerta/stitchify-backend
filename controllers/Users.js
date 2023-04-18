@@ -1,6 +1,6 @@
 const bcrypt = require("bcryptjs");
 const User = require("../models/User");
-const { error, log } = require("console");
+const Measurement = require("../models/Measurement");
 
 const signUpUser = async (req, res) => {
   try {
@@ -148,7 +148,179 @@ const signInUser = async (req, res) => {
   }
 };
 
+const submitMeasurement = async (req, res) => {
+  try {
+    var user_id = req.params.user_id;
+
+    var {
+      bust,
+      waist,
+      shoulder,
+      sleeve_length,
+      shirt_length,
+      shirt_bottom,
+      hip,
+      trouser_length,
+      trouser_waist,
+      trouser_hip,
+      trouser_rise,
+      inseam,
+      thigh,
+      leg_opening,
+    } = req.body;
+
+    console.log(
+      "data: ",
+      bust,
+      waist,
+      shoulder,
+      sleeve_length,
+      shirt_length,
+      shirt_bottom,
+      hip,
+      trouser_length,
+      trouser_waist,
+      trouser_hip,
+      trouser_rise,
+      inseam,
+      thigh,
+      leg_opening
+    );
+    if (
+      !bust ||
+      !waist ||
+      !shoulder ||
+      !sleeve_length ||
+      !shirt_length ||
+      !shirt_bottom ||
+      !hip ||
+      !trouser_length ||
+      !trouser_waist ||
+      !trouser_hip ||
+      !trouser_rise ||
+      !inseam ||
+      !thigh ||
+      !leg_opening
+    ) {
+      res.json({
+        message: "Required fields are empty!",
+        status: "400",
+      });
+    } else {
+      var measurement = new Measurement({
+        bust,
+        waist,
+        shoulder,
+        sleeve_length,
+        shirt_length,
+        shirt_bottom,
+        hip,
+        trouser_length,
+        trouser_waist,
+        trouser_hip,
+        trouser_rise,
+        inseam,
+        thigh,
+        leg_opening,
+      });
+
+      var savedMeasurement = await measurement
+        .save()
+        .then(async (measurementObj) => {
+          console.log("saved measurement>>>>>>>>  ", measurementObj);
+
+          var filter = {
+            _id: user_id,
+          };
+
+          var updateData = {
+            measurement: measurementObj._id,
+          };
+
+          var user = await User.findByIdAndUpdate(filter, updateData, {
+            new: true,
+          })
+            .then(async (onMeasurementSubmit) => {
+              console.log("on measurement submit: ", onMeasurementSubmit);
+              res.json({
+                message: "Measurement Submitted!",
+                status: "200",
+                updatedUser: onMeasurementSubmit,
+                measurement: measurementObj,
+              });
+            })
+            .catch(async (onMeasurementSubmitError) => {
+              console.log(
+                "on measurement submit error: ",
+                onMeasurementSubmitError
+              );
+              res.json({
+                message:
+                  "Something went wrong while submitting your measurement!",
+                status: "400",
+                error: onMeasurementSubmitError,
+              });
+            });
+        })
+        .catch(async (measurementNotSaveError) => {
+          console.log("measurement not save error: ", measurementNotSaveError);
+          res.json({
+            message: "Something went wrong while submitting your measurement!",
+            status: "400",
+            error: measurementNotSaveError,
+          });
+        });
+    }
+  } catch (error) {
+    res.json({
+      message: "Internal server error!",
+      status: "500",
+      error,
+    });
+  }
+};
+
+const getMeasurement = async (req, res) => {
+  try {
+    var user_id = req.params.user_id;
+
+    if (!user_id || user_id === "") {
+      res.json({
+        message: "Required fields are empty!",
+        status: "400",
+      });
+    } else {
+      var user = await User.findById(user_id, { measurement: 1 })
+        .populate("measurement")
+        .then(async (onMeasurementFound) => {
+          console.log("on measurement found:  ", onMeasurementFound);
+          res.json({
+            message: "Measurement found!",
+            status: "200",
+            measurement: onMeasurementFound.measurement,
+          });
+        })
+        .catch(async (onMeasurementNotFound) => {
+          console.log("on measurement not found: ", onMeasurementNotFound);
+          res.json({
+            message: "You have not submitted your measurement yet!",
+            status: "404",
+            error: onMeasurementNotFound,
+          });
+        });
+    }
+  } catch (error) {
+    res.json({
+      message: "Internal server error!",
+      status: "500",
+      error,
+    });
+  }
+};
+
 module.exports = {
   signUpUser,
   signInUser,
+  submitMeasurement,
+  getMeasurement,
 };
