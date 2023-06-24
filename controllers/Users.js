@@ -354,7 +354,7 @@ const updateUserById = async (req, res) => {
           } else {
             var responseData = {
               status: "202",
-              message: "Student details not updated yet!",
+              message: "user details not updated yet!",
               token: token,
             };
             res.status(202).json(responseData);
@@ -364,7 +364,7 @@ const updateUserById = async (req, res) => {
       .catch(function (err) {
         var responseData = {
           error: err,
-          message: "Error Occured!",
+          message: "Error Occurred!",
           status: "400",
         };
         res.status(400).json(responseData);
