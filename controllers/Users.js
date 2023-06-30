@@ -1,6 +1,10 @@
 const bcrypt = require("bcryptjs");
 const User = require("../models/User");
 const Measurement = require("../models/Measurement");
+const Design = require("../models/Design");
+const Tailor = require("../models/Tailor");
+
+const { isTailorIdAvailable } = require("../utils/Basic");
 
 const signUpUser = async (req, res) => {
   try {
@@ -39,6 +43,7 @@ const signUpUser = async (req, res) => {
               phone_no: phone_no,
               gender: gender,
               address: address,
+              cart: [],
             });
             let savedUser = await user
               .save()
@@ -511,9 +516,250 @@ const updateProfilePicture = async (req, res) => {
   }
 };
 
+const addDesignToCart = async (req, res) => {
+  try {
+    var { design_id, quantity, user_id } = req.body;
+    console.log("user id: ", user_id);
+
+    if (!user_id || user_id === "") {
+      res.json({
+        message: "Required fields are empty!",
+        status: "400",
+      });
+    } else {
+      var user = await User.findById(user_id)
+        .then(async (onUserFound) => {
+          console.log("on donor found: ", onUserFound);
+
+          var userCart = onUserFound.cart;
+
+          var item = await Design.findById(design_id)
+            .then(async (onDesignFound) => {
+              console.log("on item found: ", onDesignFound);
+
+              var conflictFound = isTailorIdAvailable(
+                userCart,
+                onDesignFound.tailor
+              );
+
+              console.log("conflict found: ", conflictFound);
+
+              if (conflictFound) {
+                res.json({
+                  message: "Can not add items from multiple tailors!",
+                  status: "400",
+                });
+              } else {
+                userCart.push({
+                  item: design_id,
+                  quantity,
+                  tailor: onDesignFound.tailor,
+                });
+
+                await onUserFound
+                  .save()
+                  .then((onItemAdded) => {
+                    res.json({
+                      message: "Design added to the cart!",
+                      status: "200",
+                      success: true,
+                      addedDesign: onItemAdded,
+                    });
+                  })
+                  .catch((onItemAddedError) => {
+                    res.json({
+                      message:
+                        "Something went wrong while adding design added to the cart!",
+                      status: "200",
+                      success: false,
+                    });
+                  });
+
+                // var filter = {
+                //   _id: onDesignFound._id,
+                // };
+
+                // var updatedData = {
+                //   quantity: onDesignFound.quantity - 1,
+                // };
+
+                // var updatedItem = await Design.findByIdAndUpdate(
+                //   filter,
+                //   updatedData,
+                //   {
+                //     new: true,
+                //   }
+                // )
+                //   .then((onItemUpdate) => {
+                //     console.log("on item update: ", onItemUpdate);
+                //     res.json({
+                //       message: "Item added to the cart!",
+                //       status: "200",
+                //     });
+                //   })
+                //   .catch((onItemUpdateError) => {
+                //     console.log("on item update error: ", onItemUpdateError);
+                //     res.json({
+                //       message:
+                //         "Something went wrong while adding item to the cart!",
+                //       status: "400",
+                //       error: onItemUpdateError,
+                //     });
+                //   });
+              }
+            })
+            .catch((onDesignFoundError) => {
+              console.log("on item found error: ", onDesignFoundError);
+              res.json({
+                message: "Item not found!",
+                status: "404",
+                error: onDesignFoundError,
+              });
+            });
+        })
+        .catch((onUserFoundError) => {
+          console.log("on donor found error: ", onUserFoundError);
+          res.json({
+            message: "Donor not found!",
+            status: "404",
+            error: onUserFoundError,
+          });
+        });
+    }
+  } catch (error) {
+    res.json({
+      status: "500",
+      message: "Internal Server Error",
+      error,
+    });
+  }
+};
+
+const removeDesignFromCart = async (req, res) => {
+  try {
+    var { design_id, user_id } = req.body;
+    console.log("user id: ", user_id);
+
+    if (!user_id || user_id === "") {
+      res.json({
+        message: "Required fields are empty!",
+        status: "400",
+      });
+    } else {
+      var user = await User.findById(user_id)
+        .then(async (onUserFound) => {
+          console.log("on user found: ", onUserFound);
+
+          var userCart = onUserFound.cart;
+
+          var itemIndex = userCart.findIndex(
+            (item) => item.item.toString() === design_id
+          );
+
+          if (itemIndex === -1) {
+            res.json({
+              message: "Item not found in the cart!",
+              status: "404",
+            });
+          } else {
+            var design = await Design.findById(design_id)
+              .then(async (onDesignFound) => {
+                console.log("on item found: ", onDesignFound);
+
+                userCart.splice(itemIndex, 1);
+
+                await onUserFound
+                  .save()
+                  .then((onDesignRemoved) => {
+                    console.log("on design removed: ", onDesignRemoved);
+                    res.json({
+                      message: "Design removed from the cart!",
+                      status: "200",
+                      success: true,
+                    });
+                  })
+                  .catch((onDesignRemovedError) => {
+                    console.log(
+                      "on design removed error: ",
+                      onDesignRemovedError
+                    );
+                    res.json({
+                      message:
+                        "Something went wrong while removing design from the cart!",
+                      status: "400",
+                      error: onDesignRemovedError,
+                      success: false,
+                    });
+                  });
+
+                // var filter = {
+                //   _id: onDesignFound._id,
+                // };
+
+                // var updatedData = {
+                //   quantity: onDesignFound.quantity + 1,
+                // };
+
+                // var updatedItem = await Item.findByIdAndUpdate(
+                //   filter,
+                //   updatedData,
+                //   {
+                //     new: true,
+                //   }
+                // )
+                //   .then((onItemUpdate) => {
+                //     console.log("on item update: ", onItemUpdate);
+                //     res.json({
+                //       message: "Item removed from the cart!",
+                //       status: "200",
+                //     });
+                //   })
+                //   .catch((onItemUpdateError) => {
+                //     console.log("on item update error: ", onItemUpdateError);
+                //     res.json({
+                //       message:
+                //         "Something went wrong while removing item from the cart!",
+                //       status: "400",
+                //       error: onItemUpdateError,
+                //     });
+                //   });
+              })
+              .catch((onDesignFoundError) => {
+                console.log("on design found error: ", onDesignFoundError);
+                res.json({
+                  message: "Design not found!",
+                  status: "404",
+                  error: onDesignFoundError,
+                });
+              });
+          }
+        })
+        .catch((onUserFoundError) => {
+          console.log("on user found error: ", onUserFoundError);
+          res.json({
+            message: "User not found!",
+            status: "404",
+            error: onUserFoundError,
+          });
+        });
+    }
+  } catch (error) {
+    res.json({
+      status: "500",
+      message: "Internal Server Error",
+      error,
+    });
+  }
+};
+
 module.exports = {
   signUpUser,
   signInUser,
   submitMeasurement,
   getMeasurement,
+  updateProfilePicture,
+  deleteUserById,
+  updateUserById,
+  addDesignToCart,
+  removeDesignFromCart,
 };
