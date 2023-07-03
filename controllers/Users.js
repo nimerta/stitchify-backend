@@ -6,9 +6,82 @@ const Tailor = require("../models/Tailor");
 
 const { isTailorIdAvailable } = require("../utils/Basic");
 
+// const signUpUser = async (req, res) => {
+//   try {
+//     var { email, password, gender, address, phone_no, image, full_name } =
+//       req.body;
+
+//     if (
+//       !email ||
+//       email === "" ||
+//       !password ||
+//       password === "" ||
+//       !gender ||
+//       gender === "" ||
+//       !address ||
+//       address === "" ||
+//       !phone_no ||
+//       phone_no === "" ||
+//       !full_name ||
+//       full_name === ""
+//     ) {
+//       res.json({
+//         message: "Required fields are empty!",
+//         status: "400",
+//       });
+//     } else {
+//       bcrypt.genSalt(10, function (err, salt) {
+//         bcrypt.hash(password, salt, async function (err, hash) {
+//           // Store hash in your password DB.
+//           if (err) {
+//             console.log(err);
+//           } else {
+//             const user = new User({
+//               email_address: email,
+//               full_name: full_name,
+//               password: hash,
+//               phone_no: phone_no,
+//               gender: gender,
+//               address: address,
+//               cart: [],
+//             });
+//             let savedUser = await user
+//               .save()
+//               .then((resp) => {
+//                 console.log(resp);
+//                 res.status(201).json({
+//                   status: "201",
+//                   message: "New user registered!",
+//                   savedUser: resp,
+//                 });
+//               })
+
+//               .catch((error) => {
+//                 console.log(error);
+//                 var responseData = {
+//                   status: "422",
+//                   errors: error,
+//                 };
+//                 res.status(422).json(responseData);
+//               });
+
+//             console.log(hash);
+//           }
+//         });
+//       });
+//     }
+//   } catch (error) {
+//     res.json({
+//       message: "Internal server error!",
+//       status: "500",
+//       error,
+//     });
+//   }
+// };
+
 const signUpUser = async (req, res) => {
   try {
-    var { email, password, gender, address, phone_no, image, full_name } =
+    const { email, password, gender, address, phone_no, image, full_name } =
       req.body;
 
     if (
@@ -30,45 +103,53 @@ const signUpUser = async (req, res) => {
         status: "400",
       });
     } else {
-      bcrypt.genSalt(10, function (err, salt) {
-        bcrypt.hash(password, salt, async function (err, hash) {
-          // Store hash in your password DB.
-          if (err) {
-            console.log(err);
-          } else {
-            const user = new User({
-              email_address: email,
-              full_name: full_name,
-              password: hash,
-              phone_no: phone_no,
-              gender: gender,
-              address: address,
-              cart: [],
-            });
-            let savedUser = await user
-              .save()
-              .then((resp) => {
-                console.log(resp);
-                res.status(201).json({
-                  status: "201",
-                  message: "New user registered!",
-                  savedUser: resp,
-                });
-              })
-
-              .catch((error) => {
-                console.log(error);
-                var responseData = {
-                  status: "422",
-                  errors: error,
-                };
-                res.status(422).json(responseData);
+      // Check if the user with the same email address already exists
+      const existingUser = await User.findOne({ email_address: email });
+      if (existingUser) {
+        res.json({
+          message: "User with this email address already exists!",
+          status: "409",
+        });
+      } else {
+        bcrypt.genSalt(10, function (err, salt) {
+          bcrypt.hash(password, salt, async function (err, hash) {
+            if (err) {
+              console.log(err);
+            } else {
+              const user = new User({
+                email_address: email,
+                full_name: full_name,
+                password: hash,
+                phone_no: phone_no,
+                gender: gender,
+                address: address,
+                cart: [],
               });
 
-            console.log(hash);
-          }
+              let savedUser = await user
+                .save()
+                .then((resp) => {
+                  console.log(resp);
+                  res.status(201).json({
+                    status: "201",
+                    message: "New user registered!",
+                    savedUser: resp,
+                  });
+                })
+                .catch((error) => {
+                  console.log(error);
+                  var responseData = {
+                    status: "422",
+                    errors: error,
+                  };
+                  res.status(422).json(responseData);
+                });
+
+              console.log(hash);
+            }
+          });
         });
-      });
+      }
     }
   } catch (error) {
     res.json({
