@@ -14,8 +14,6 @@ const signUpUser = async (req, res) => {
       password === "" ||
       !gender ||
       gender === "" ||
-      !address ||
-      address === "" ||
       !phone_no ||
       phone_no === "" ||
       !full_name ||
@@ -77,6 +75,7 @@ const signUpUser = async (req, res) => {
 const signInUser = async (req, res) => {
   try {
     var { email, password } = req.body;
+    console.log("email: ", email, password);
 
     if (!email || email === "" || !password || password === "") {
       res.json({
@@ -103,7 +102,7 @@ const signInUser = async (req, res) => {
                   singleUser: singleUser[0],
                 };
 
-                res.status(404).json(responseData);
+                res.json(responseData);
               } else {
                 bcrypt.compare(
                   password,
@@ -125,7 +124,7 @@ const signInUser = async (req, res) => {
                         status: "404",
                       };
 
-                      res.status(404).json(responseData);
+                      res.json(responseData);
                       //   res.send(err);
                     }
                   }

@@ -9,6 +9,8 @@ const uploadDesign = async (req, res) => {
     var { title, tailor_id, price, design_for, description, imageBase64 } =
       req.body;
 
+    console.log("hello g");
+
     if (
       !title ||
       !tailor_id ||
@@ -19,7 +21,7 @@ const uploadDesign = async (req, res) => {
     ) {
       res.json({
         message: "Required fields are empty!",
-        status: " 400",
+        status: "400",
       });
     } else {
       cloudinary.config({
@@ -29,7 +31,7 @@ const uploadDesign = async (req, res) => {
       });
 
       cloudinary.uploader
-        .upload(imageBase64, {
+        .upload(`data:image/png;base64,${imageBase64}`, {
           folder: "designs",
         })
         .then(async (onImageUpload) => {
@@ -56,7 +58,7 @@ const uploadDesign = async (req, res) => {
               res.json({
                 message: "Image Uploaded!",
                 status: "200",
-                savedDesign: savedDesign,
+                savedDesign: onDesignSave,
               });
             })
             .catch(async (onDesignSaveError) => {
@@ -67,10 +69,14 @@ const uploadDesign = async (req, res) => {
                 error: onDesignSaveError,
               });
             });
+        })
+        .catch(async (onUploadErrorCloudinary) => {
+          console.log("on upload error cloudinary: ", onUploadErrorCloudinary);
+          res.json({
+            onUploadErrorCloudinary,
+          });
         });
     }
-
-    res.send(cloudConfig);
   } catch (error) {
     res.json({
       message: "Internal server error!",
