@@ -432,7 +432,7 @@ const updateUserById = async (req, res) => {
           if (result.lastErrorObject.updatedExisting === true) {
             var responseData = {
               status: "200",
-              message: "user details updated successfully!",
+              message: "User details updated successfully!",
               updatedDocument: result.value,
             };
             res.status(200).json(responseData);
@@ -832,6 +832,84 @@ const removeDesignFromCart = async (req, res) => {
   }
 };
 
+const getUser = async (req, res) => {
+  try {
+    var user_id = req.params.user_id;
+
+    if (!user_id || user_id === "") {
+      res.json({
+        message: "Required fields are empty!",
+        status: "400",
+      });
+    } else {
+      var user = await User.findById(user_id)
+        .then((onUserFound) => {
+          console.log("on user found: ", onUserFound);
+
+          res.json({
+            message: "User found!",
+            status: "200",
+            user: onUserFound,
+          });
+        })
+        .catch((onUserFoundError) => {
+          console.log("on user found error: ", onUserFoundError);
+          res.json({
+            message: "User not found!",
+            status: "404",
+            error: onUserFoundError,
+          });
+        });
+    }
+  } catch (error) {
+    res.json({
+      status: "500",
+      message: "Internal Server Error",
+      error,
+    });
+  }
+};
+
+const getUserCart = async (req, res) => {
+  try {
+    var user_id = req.params.user_id;
+
+    if (!user_id || user_id === "") {
+      res.json({
+        message: "Required fields are empty!",
+        status: "400",
+      });
+    } else {
+      var user = await User.findById(user_id)
+        .populate("cart.item")
+        .then((onUserCartFound) => {
+          console.log("on user cart found: ", onUserCartFound);
+
+          res.json({
+            message: "Cart found!",
+            status: "200",
+            cart: onUserCartFound.cart,
+            user: onUserCartFound,
+          });
+        })
+        .catch((onUserCartFoundError) => {
+          console.log("on user cart found error: ", onUserCartFoundError);
+          res.json({
+            message: "Something went wrong while getting user cart!",
+            status: "400",
+            error: onUserCartFoundError,
+          });
+        });
+    }
+  } catch (error) {
+    res.json({
+      status: "500",
+      message: "Internal Server Error",
+      error,
+    });
+  }
+};
+
 module.exports = {
   signUpUser,
   signInUser,
@@ -842,4 +920,6 @@ module.exports = {
   updateUserById,
   addDesignToCart,
   removeDesignFromCart,
+  getUser,
+  getUserCart,
 };

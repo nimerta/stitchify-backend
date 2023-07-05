@@ -71,22 +71,39 @@ const sendForgotPasswordOtpEmail = async (req, res) => {
     transporter.sendMail(mailOptions, function (error, info) {
       if (error) {
         console.log(error);
-        res, send(error);
+        res.json({
+          message: "Forgot password otp me maslo aa!",
+          status: "400",
+          error,
+        });
       } else {
-        req.session.code = otpCode;
+        // req.session.code = otpCode;
+        console.log("info: ", info.response);
+
         var otpObj = new OTP({
           email: email,
           otp_code: otpCode,
         });
 
-        otpObj.save();
-
-        res.json({
-          message: "Forgot Password OTP Email Sent",
-          status: "200",
-          success: true,
-        });
-        console.log("Email sent: " + info.response);
+        otpObj
+          .save()
+          .then((onOtpSave) => {
+            console.log("on otp save: ", onOtpSave);
+            res.json({
+              message: "Forgot Password OTP Email Sent",
+              status: "200",
+              success: true,
+            });
+          })
+          .catch((onOtpSaveError) => {
+            console.log("on otp save error: ", onOtpSaveError);
+            res.json({
+              message: "OTP not sent!",
+              status: "400",
+              error: onOtpSaveError,
+            });
+          });
+        // console.log("Email sent: " + info.response);
       }
     });
   } catch (error) {

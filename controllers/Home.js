@@ -46,6 +46,7 @@ const getDesignsForYou = async (req, res) => {
   try {
     var designForYou = await Design.find({})
       .limit(20)
+      .populate("tailor")
       .then(async (onDesignsFound) => {
         console.log("on designs found: ", onDesignsFound);
 
