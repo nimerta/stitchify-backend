@@ -81,7 +81,11 @@ const sendForgotPasswordOtpEmail = async (req, res) => {
 
         otpObj.save();
 
-        res.send("Forgot Password OTP Email Sent");
+        res.json({
+          message: "Forgot Password OTP Email Sent",
+          status: "200",
+          success: true,
+        });
         console.log("Email sent: " + info.response);
       }
     });
