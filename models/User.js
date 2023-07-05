@@ -36,14 +36,14 @@ const userSchema = mongoose.Schema({
     required: true,
     default: 0,
   },
-  standard_orders: [
-    {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "standard_orders",
-      required: false,
-      default: [],
-    },
-  ],
+  // standard_orders: [
+  //   {
+  //     type: mongoose.Schema.Types.ObjectId,
+  //     ref: "standard_orders",
+  //     required: false,
+  //     default: [],
+  //   },
+  // ],
   image: {
     type: String,
     required: false,
@@ -60,6 +60,13 @@ const userSchema = mongoose.Schema({
       ref: "custom_orders",
       required: false,
       default: [],
+    },
+  ],
+  cart: [
+    {
+      item: { type: mongoose.Schema.Types.ObjectId, ref: "designs" },
+      quantity: { type: Number, default: 1 },
+      tailor: { type: mongoose.Schema.Types.ObjectId, ref: "tailors" },
     },
   ],
 });

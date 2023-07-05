@@ -16,14 +16,14 @@ const tailorSchema = mongoose.Schema({
     required: true,
     default: "",
   },
-  standard_orders: [
-    {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "standard_orders",
-      required: false,
-      default: [],
-    },
-  ],
+  // standard_orders: [
+  //   {
+  //     type: mongoose.Schema.Types.ObjectId,
+  //     ref: "standard_orders",
+  //     required: false,
+  //     default: [],
+  //   },
+  // ],
 
   gender: {
     type: String,
