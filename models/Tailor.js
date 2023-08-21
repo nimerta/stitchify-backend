@@ -66,6 +66,16 @@ const tailorSchema = mongoose.Schema({
       default: [],
     },
   ],
+  main_area: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Areas",
+    default: null,
+  },
+  city: {
+    type: String,
+    required: false,
+    default: "",
+  },
 });
 
 var tailorModel = mongoose.model("tailors", tailorSchema);

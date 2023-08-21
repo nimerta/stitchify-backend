@@ -1,6 +1,6 @@
 const mongoose = require("mongoose");
 
-const standardOrderSchema = new mongoose.Schema(
+const customOrderSchema = new mongoose.Schema(
   {
     user: {
       type: mongoose.Schema.Types.ObjectId,
@@ -12,10 +12,18 @@ const standardOrderSchema = new mongoose.Schema(
       ref: "tailors",
       default: null,
     },
-    items: [
+    images: [
       {
-        item: { type: mongoose.Schema.Types.ObjectId, ref: "designs" },
-        quantity: { type: Number, required: true },
+        url: {
+          type: String,
+          required: false,
+          default: "",
+        },
+        public_id: {
+          type: String,
+          required: false,
+          default: "",
+        },
       },
     ],
     completed: { type: Boolean, default: false },
@@ -53,13 +61,23 @@ const standardOrderSchema = new mongoose.Schema(
       ref: "addresses",
       default: null,
     },
+    offers: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Offer",
+      },
+    ],
+
+    accepted_offer: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Offer",
+      required: false,
+      default: null,
+    },
   },
   { timestamps: true }
 );
 
-const standardOrderModel = mongoose.model(
-  "standard_orders",
-  standardOrderSchema
-);
+const customOrderModel = mongoose.model("CustomerOrder", customOrderSchema);
 
-module.exports = standardOrderModel;
+module.exports = customOrderModel;

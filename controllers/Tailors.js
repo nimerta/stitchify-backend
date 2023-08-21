@@ -79,8 +79,17 @@ const tailorSignIn = async (req, res) => {
 
 const tailorSignUp = async (req, res) => {
   try {
-    var { email, password, gender, address, phone_no, image, full_name } =
-      req.body;
+    var {
+      email,
+      password,
+      gender,
+      address,
+      phone_no,
+      image,
+      full_name,
+      main_area,
+      city,
+    } = req.body;
 
     if (
       !email ||
@@ -114,6 +123,8 @@ const tailorSignUp = async (req, res) => {
               phone_no: phone_no,
               gender: gender,
               address: address,
+              main_area: main_area,
+              city: city,
             });
             let savedTailor = await tailor
               .save()

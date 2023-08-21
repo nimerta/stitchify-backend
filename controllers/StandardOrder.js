@@ -3,6 +3,7 @@ const User = require("../models/User");
 const Tailor = require("../models/Tailor");
 
 const { checkOrderType, checkPaymentType } = require("../utils/Basic");
+const { orderTypes } = require("../constants/StatusTypes");
 
 const createStandardOrder = async (req, res) => {
   try {
@@ -13,6 +14,7 @@ const createStandardOrder = async (req, res) => {
       order_type,
       payment_type,
       address,
+      payment_method,
     } = req.body;
 
     const user = await User.findById(user_id)
@@ -46,6 +48,7 @@ const createStandardOrder = async (req, res) => {
           order_type: constantOrderType,
           payment_type: constantPaymentType,
           address: address,
+          payment_method: payment_method,
         });
 
         var savedOrder = await order
@@ -60,6 +63,7 @@ const createStandardOrder = async (req, res) => {
               message: "Order Created!",
               status: "200",
               order: onOrderSave,
+              success: true,
             });
           })
           .catch((onOrderSaveError) => {
@@ -242,9 +246,128 @@ const getStandardOrder = async (req, res) => {
   }
 };
 
+// Assuming you have Express.js set up and the StandardOrder imported
+
+// Get all PLACED orders
+const getTailorPlacedOrders = async (req, res) => {
+  try {
+    var tailor_id = req.params.tailor_id;
+    const orders = await StandardOrder.find({
+      order_status: orderTypes.PLACED,
+      tailor: tailor_id,
+    });
+    res.json({
+      message: "Placed orders found!",
+      status: "200",
+      success: true,
+      pendingOrders: orders,
+    });
+  } catch (error) {
+    res.status(500).json({ error: "An error occurred while fetching orders." });
+  }
+};
+
+// Get all CONFIRMED orders
+const getTailorConfirmedOrders = async (req, res) => {
+  try {
+    var tailor_id = req.params.tailor_id;
+    const orders = await StandardOrder.find({
+      order_status: orderTypes.CONFIRMED,
+      tailor: tailor_id,
+    });
+    res.json(orders);
+  } catch (error) {
+    res.status(500).json({ error: "An error occurred while fetching orders." });
+  }
+};
+
+// Get all IN-PROCESS orders
+const getTailorInProcessOrders = async (req, res) => {
+  try {
+    var tailor_id = req.params.tailor_id;
+
+    const orders = await StandardOrder.find({
+      order_status: orderTypes.PREPARING,
+      tailor: tailor_id,
+    });
+    res.json(orders);
+  } catch (error) {
+    res.status(500).json({ error: "An error occurred while fetching orders." });
+  }
+};
+
+// Get all COMPLETED orders
+const getTailorCompletedOrders = async (req, res) => {
+  try {
+    var tailor_id = req.params.tailor_id;
+
+    const orders = await StandardOrder.find({
+      order_status: orderTypes.COMPLETED,
+      tailor: tailor_id,
+    });
+    res.json(orders);
+  } catch (error) {
+    res.status(500).json({ error: "An error occurred while fetching orders." });
+  }
+};
+
+// Complete the order
+const completeOrder = async (req, res) => {
+  const { orderId } = req.params;
+
+  try {
+    const order = await StandardOrder.findById(orderId);
+    if (!order) {
+      return res.status(404).json({
+        message: "Order not found.",
+        status: "404",
+        success: false,
+      });
+    }
+
+    order.completed = true;
+    order.order_status = orderTypes.COMPLETED;
+    await order.save();
+
+    res.json({
+      message: "Order completed successfully.",
+      status: "200",
+      success: true,
+    });
+  } catch (error) {
+    res
+      .status(500)
+      .json({ error: "An error occurred while completing the order." });
+  }
+};
+
+const getUserOrders = async (req, res) => {
+  try {
+    var user_id = req.params.user_id;
+
+    const orders = await StandardOrder.find({
+      user: user_id,
+    });
+    res.json({
+      message: "User order history found!",
+      status: "200",
+      success: true,
+      orders: orders,
+    });
+  } catch (error) {
+    res.status(500).json({ error: "An error occurred while fetching orders." });
+  }
+};
+
 module.exports = {
   createStandardOrder,
   updateStandardOrderPaymentStatus,
   updateStandardOrderStatus,
   getStandardOrder,
+  getTailorPlacedOrders,
+  getTailorConfirmedOrders,
+  getTailorInProcessOrders,
+  getTailorCompletedOrders,
+  completeOrder,
+  getUserOrders,
 };

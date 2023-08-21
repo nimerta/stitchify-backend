@@ -1,10 +1,8 @@
 const orderTypes = {
   PLACED: "PLACED",
-  FINISHED: "FINISHED",
-  PREPARING: "PREPARING",
-  CANCELLED: "CANCELLED",
-  COD: "CASH-ON-DELIVERY",
-  PICKUP: "PICKUP",
+  PREPARING: "IN-PROCESS",
+  CONFIRMED: "CONFIRMED",
+  COMPLETED: "COMPLETED",
 };
 
 const paymentTypes = {
@@ -12,7 +10,13 @@ const paymentTypes = {
   PAID: "PAID",
 };
 
+const paymentMethodTypes = {
+  COD: "CASH-ON-DELIVERY",
+  PICKUP: "PICKUP",
+};
+
 module.exports = {
   orderTypes,
   paymentTypes,
+  paymentMethodTypes,
 };

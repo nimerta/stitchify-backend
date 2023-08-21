@@ -45,9 +45,16 @@ const userSchema = mongoose.Schema({
   //   },
   // ],
   image: {
-    type: String,
-    required: false,
-    default: "",
+    url: {
+      type: String,
+      required: false,
+      default: "",
+    },
+    public_id: {
+      type: String,
+      required: false,
+      default: "",
+    },
   },
   measurement: {
     type: mongoose.Schema.Types.ObjectId,

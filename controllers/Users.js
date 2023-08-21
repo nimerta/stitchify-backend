@@ -3,8 +3,10 @@ const User = require("../models/User");
 const Measurement = require("../models/Measurement");
 const Design = require("../models/Design");
 const Tailor = require("../models/Tailor");
+const cloudinary = require("cloudinary").v2;
 
 const { isTailorIdAvailable } = require("../utils/Basic");
+const { cloudConfig } = require("../config/Cloudinary");
 
 // const signUpUser = async (req, res) => {
 //   try {
@@ -107,6 +109,7 @@ const signUpUser = async (req, res) => {
         res.json({
           message: "User with this email address already exists!",
           status: "409",
+          alreadyExists: true,
         });
       } else {
         bcrypt.genSalt(10, function (err, salt) {
@@ -514,6 +517,8 @@ const updateProfilePicture = async (req, res) => {
       var user = await User.findById(user_id)
         .then(async (onUserFound) => {
           console.log("on user found: ", onUserFound);
+
+          cloudinary.config(cloudConfig);
 
           cloudinary.uploader
             .upload(`data:image/jpeg;base64,${image}`, {
