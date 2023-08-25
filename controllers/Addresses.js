@@ -219,9 +219,50 @@ const updateAddress = async (req, res) => {
   }
 };
 
+const deleteAddress = async (req, res) => {
+  try {
+    var address_id = req.params.address_id;
+
+    if (!address_id || address_id === "") {
+      res.json({
+        message: "Required fields are empty!",
+        status: "400",
+      });
+    } else {
+      const deletedAddress = await Address.findByIdAndDelete(address_id)
+        .then((onDelete) => {
+          console.log("on address delete: ", onDelete);
+          res.json({
+            message: "Address Deleted Successfully",
+            status: "200",
+            deletedAddress: onDelete,
+          });
+        })
+        .catch((onDeleteError) => {
+          console.log(
+            "something went wrong while deleting address: ",
+            onDeleteError
+          );
+          res.json({
+            message: "Something went wrong while deleting address.",
+            status: "400",
+            error: onDeleteError,
+          });
+        });
+    }
+  } catch (error) {
+    res.json({
+      message: "Internal server error!",
+      status: "500",
+      error,
+    });
+  }
+};
+
 module.exports = {
   addNewAddress,
   getUserAddresses,
   activateAddress,
   updateAddress,
+  deleteAddress,
 };
