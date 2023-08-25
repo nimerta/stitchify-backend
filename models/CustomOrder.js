@@ -36,10 +36,6 @@ const customOrderSchema = new mongoose.Schema(
       type: Number,
       required: true,
     },
-    sub_total: {
-      type: Number,
-      required: true,
-    },
     payment_status: {
       type: String,
       required: false,
