@@ -70,6 +70,26 @@ const customOrderSchema = new mongoose.Schema(
       required: false,
       default: null,
     },
+    fabric: {
+      type: String,
+      required: true,
+      default: "",
+    },
+    category: {
+      type: String,
+      required: true,
+      default: "",
+    },
+    instructions: {
+      type: String,
+      required: false,
+      default: "",
+    },
+    order_area: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Areas",
+      default: null,
+    },
   },
   { timestamps: true }
 );

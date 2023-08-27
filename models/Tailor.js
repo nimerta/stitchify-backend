@@ -61,7 +61,7 @@ const tailorSchema = mongoose.Schema({
   custom_orders: [
     {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "custom_orders",
+      ref: "CustomerOrder",
       required: false,
       default: [],
     },

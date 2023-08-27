@@ -6,9 +6,12 @@ const {
   createCustomOrder,
   getAllUserCustomOrders,
   getCustomOrder,
+  createOrderOffer,
 } = require("../controllers/CustomOrder");
 
 router.post("/create-custom-order", createCustomOrder);
+
+router.post("/create-order-offer", createOrderOffer);
 
 router.get("/get-custom-order/:order_id", getCustomOrder);
 
