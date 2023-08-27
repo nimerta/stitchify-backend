@@ -378,7 +378,7 @@ const getMeasurement = async (req, res) => {
         status: "400",
       });
     } else {
-      var user = await User.findById(user_id, { measurement: 1 })
+      var user = await User.findById(user_id)
         .populate("measurement")
         .then(async (onMeasurementFound) => {
           console.log("on measurement found:  ", onMeasurementFound);

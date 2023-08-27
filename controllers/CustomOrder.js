@@ -32,6 +32,7 @@ const createCustomOrder = async (req, res) => {
     });
 
     for (let image of images) {
+      image = `data:image/png;base64,${image}`;
       var uploadedResult = await cloudinary.uploader.upload(image);
 
       console.log("uploadedResult: ", uploadedResult);
@@ -111,14 +112,17 @@ const getCustomOrder = async (req, res) => {
         status: "400",
       });
     } else {
-      const customOrder = await CustomerOrder.findById(customOrderId).populate({
-        path: "offers",
+      const customOrder = await CustomerOrder.findById(customOrderId)
+        .populate({
+          path: "offers",
 
-        populate: {
-          path: "tailor",
-          select: "full_name",
-        },
-      });
+          populate: {
+            path: "tailor",
+            select: "full_name",
+          },
+        })
+        .populate("user", "full_name phone_no")
+        .populate("address", "formatted_address");
 
       if (!customOrder) {
         console.log("order not found: ", customOrder);
@@ -144,6 +148,43 @@ const getCustomOrder = async (req, res) => {
 };
 
 const getAllUserCustomOrders = async (req, res) => {
+  try {
+    const userId = req.params.user_id;
+
+    if (!userId || userId === "") {
+      res.json({
+        message: "Required fields are empty!",
+        status: "400",
+      });
+    } else {
+      const customOrdersOfUser = await CustomerOrder.find({
+        user: userId,
+      });
+
+      if (!customOrdersOfUser || customOrdersOfUser.length <= 0) {
+        console.log("orders not found: ", customOrdersOfUser);
+        res.json({
+          message: "You have not placed any custom order yet!",
+          status: "404",
+        });
+      } else {
+        res.json({
+          message: "Custom orders found for you!",
+          status: "200",
+          allCustomOrders: customOrdersOfUser,
+        });
+      }
+    }
+  } catch (error) {
+    res.json({
+      message: "Internal Server Error!",
+      status: "500",
+      error,
+    });
+  }
+};
+
+const getAllTailorCustomOrders = async (req, res) => {
   try {
     const userId = req.params.user_id;
 
