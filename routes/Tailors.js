@@ -11,6 +11,7 @@ const {
 } = require("../controllers/StandardOrder");
 
 router.post("/sign-up", tailorControllers.tailorSignUp);
+router.get("/get-tailor/:tailor_id", tailorControllers.getTailor);
 
 router.post("/sign-in", tailorControllers.tailorSignIn);
 

@@ -3,6 +3,7 @@ const orderTypes = {
   PREPARING: "IN-PROCESS",
   CONFIRMED: "CONFIRMED",
   COMPLETED: "COMPLETED",
+  DELIVERED: "DELIVERED",
 };
 
 const paymentTypes = {

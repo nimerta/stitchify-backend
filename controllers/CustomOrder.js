@@ -186,20 +186,33 @@ const getAllUserCustomOrders = async (req, res) => {
 
 const getAllTailorCustomOrders = async (req, res) => {
   try {
-    const userId = req.params.user_id;
+    const tailor_id = req.params.tailor_id;
+    console.log("tailor: ", tailor_id);
 
-    if (!userId || userId === "") {
+    if (!tailor_id || tailor_id === "") {
       res.json({
         message: "Required fields are empty!",
         status: "400",
       });
     } else {
-      const customOrdersOfUser = await CustomerOrder.find({
-        user: userId,
+      const customOrdersOfTailor = await Tailor.findById(tailor_id).populate({
+        path: "custom_orders",
+
+        populate: [
+          {
+            path: "user",
+          },
+          {
+            path: "order_area",
+          },
+          {
+            path: "address",
+          },
+        ],
       });
 
-      if (!customOrdersOfUser || customOrdersOfUser.length <= 0) {
-        console.log("orders not found: ", customOrdersOfUser);
+      if (!customOrdersOfTailor || customOrdersOfTailor.length <= 0) {
+        console.log("orders not found: ", customOrdersOfTailor);
         res.json({
           message: "You have not placed any custom order yet!",
           status: "404",
@@ -208,7 +221,7 @@ const getAllTailorCustomOrders = async (req, res) => {
         res.json({
           message: "Custom orders found for you!",
           status: "200",
-          allCustomOrders: customOrdersOfUser,
+          allCustomOrders: customOrdersOfTailor,
         });
       }
     }
@@ -295,4 +308,5 @@ module.exports = {
   getCustomOrder,
   getAllUserCustomOrders,
   createOrderOffer,
+  getAllTailorCustomOrders,
 };

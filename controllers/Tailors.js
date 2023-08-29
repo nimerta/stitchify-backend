@@ -21,6 +21,20 @@ const tailorSignIn = async (req, res) => {
           } else {
             var singleUser = await Tailor.find({
               email_address: email,
+            }).populate({
+              path: "custom_orders",
+
+              populate: [
+                {
+                  path: "user",
+                },
+                {
+                  path: "order_area",
+                },
+                {
+                  path: "address",
+                },
+              ],
             });
 
             try {
@@ -203,8 +217,46 @@ const getTailorDesigns = async (req, res) => {
   }
 };
 
+const getTailor = async (req, res) => {
+  try {
+    var tailor_id = req.params.tailor_id;
+
+    if (!tailor_id || tailor_id === "") {
+      res.json({
+        message: "Required fields are empty!",
+        status: "400",
+      });
+    } else {
+      var user = await Tailor.findById(tailor_id)
+        .then((onUserFound) => {
+          console.log("on user found: ", onUserFound);
+
+          res.json({
+            message: "User found!",
+            status: "200",
+            user: onUserFound,
+          });
+        })
+        .catch((onUserFoundError) => {
+          console.log("on user found error: ", onUserFoundError);
+          res.json({
+            message: "User not found!",
+            status: "404",
+            error: onUserFoundError,
+          });
+        });
+    }
+  } catch (error) {
+    res.json({
+      status: "500",
+      message: "Internal Server Error",
+      error,
+    });
+  }
+};
 module.exports = {
   tailorSignIn,
   tailorSignUp,
   getTailorDesigns,
+  getTailor,
 };

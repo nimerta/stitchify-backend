@@ -253,14 +253,14 @@ const getTailorPlacedOrders = async (req, res) => {
   try {
     var tailor_id = req.params.tailor_id;
     const orders = await StandardOrder.find({
-      order_status: orderTypes.PLACED,
+      // order_status: orderTypes.PLACED,
       tailor: tailor_id,
-    });
+    }).populate(["user", "address", "items.item"]);
     res.json({
       message: "Placed orders found!",
       status: "200",
       success: true,
-      pendingOrders: orders,
+      allOrders: orders,
     });
   } catch (error) {
     res.status(500).json({ error: "An error occurred while fetching orders." });
@@ -347,7 +347,11 @@ const getUserOrders = async (req, res) => {
 
     const orders = await StandardOrder.find({
       user: user_id,
-    });
+    })
+      .populate(["user", "address", "items.item", "tailor"])
+      .sort({
+        createdAt: -1,
+      });
     res.json({
       message: "User order history found!",
       status: "200",
