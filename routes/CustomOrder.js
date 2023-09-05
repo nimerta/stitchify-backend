@@ -8,6 +8,8 @@ const {
   getCustomOrder,
   createOrderOffer,
   getAllTailorCustomOrders,
+  acceptOrderOffer,
+  declineOrderOffer,
 } = require("../controllers/CustomOrder");
 
 router.post("/create-custom-order", createCustomOrder);
@@ -21,5 +23,9 @@ router.get(
   "/get-all-tailor-custom-orders/:tailor_id",
   getAllTailorCustomOrders
 );
+
+router.post("/accept-offer/:orderId", acceptOrderOffer);
+
+router.post("/decline-offer/:orderId", declineOrderOffer);
 
 module.exports = router;

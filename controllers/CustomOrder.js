@@ -122,7 +122,15 @@ const getCustomOrder = async (req, res) => {
           },
         })
         .populate("user", "full_name phone_no")
-        .populate("address", "formatted_address");
+        .populate("address", "formatted_address")
+        .populate({
+          path: "accepted_offer",
+
+          populate: {
+            path: "tailor",
+            select: "full_name",
+          },
+        });
 
       if (!customOrder) {
         console.log("order not found: ", customOrder);
@@ -159,7 +167,12 @@ const getAllUserCustomOrders = async (req, res) => {
     } else {
       const customOrdersOfUser = await CustomerOrder.find({
         user: userId,
-      });
+      })
+        .sort({
+          createdAt: -1,
+        })
+        .populate("tailor")
+        .populate("order_area");
 
       if (!customOrdersOfUser || customOrdersOfUser.length <= 0) {
         console.log("orders not found: ", customOrdersOfUser);
@@ -303,10 +316,104 @@ const createOrderOffer = async (req, res) => {
   }
 };
 
+const acceptOrderOffer = async (req, res) => {
+  try {
+    const { orderId } = req.params;
+    const { acceptedOfferId } = req.body;
+
+    // Find the custom order by its ID
+    const customOrder = await CustomerOrder.findById(orderId);
+
+    if (!customOrder) {
+      return res.status(404).json({ message: "Custom order not found" });
+    }
+
+    // Check if the custom order has already been completed or has an accepted offer
+    if (customOrder.completed || customOrder.accepted_offer) {
+      return res.status(400).json({
+        message:
+          "Custom order has already been completed or has an accepted offer",
+      });
+    }
+
+    // Find the offer by its ID
+    const acceptedOffer = await Offer.findById(acceptedOfferId);
+
+    console.log("acceptedOffer: ", acceptedOfferId);
+
+    if (!acceptedOffer) {
+      return res.status(404).json({ message: "Offer not found" });
+    }
+
+    // Update the offer's status and any other relevant information
+    acceptedOffer.is_accepted = true;
+    acceptedOffer.offer_status = "accepted";
+
+    // Save the updated offer
+    await acceptedOffer.save();
+
+    // Update the custom order with the accepted offer ID
+    customOrder.accepted_offer = acceptedOfferId;
+    customOrder.order_status = "ACCEPTED"; // You can update the order status as per your business logic
+
+    // Save the updated custom order
+    await customOrder.save();
+
+    return res.status(200).json({ message: "Offer accepted successfully" });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+const declineOrderOffer = async (req, res) => {
+  try {
+    const { orderId } = req.params;
+    const { declinedOfferId } = req.body; // Assuming you send the declinedOfferId in the request body
+
+    // Find the custom order by its ID
+    const customOrder = await CustomerOrder.findById(orderId);
+
+    if (!customOrder) {
+      return res.status(404).json({ message: "Custom order not found" });
+    }
+
+    // Check if the custom order has already been completed or has an accepted offer
+    if (customOrder.completed || customOrder.accepted_offer) {
+      return res.status(400).json({
+        message:
+          "Custom order has already been completed or has an accepted offer",
+      });
+    }
+
+    // Find the offer by its ID
+    const declinedOffer = await Offer.findById(declinedOfferId);
+
+    if (!declinedOffer) {
+      return res.status(404).json({ message: "Offer not found" });
+    }
+
+    // Update the offer's status to indicate it has been declined
+    declinedOffer.offer_status = "rejected";
+
+    // Save the updated offer
+    await declinedOffer.save();
+
+    const declinedOfferDeleted = await Offer.findByIdAndDelete(declinedOfferId);
+
+    return res.status(200).json({ message: "Offer declined successfully" });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: "Internal server error" });
+  }
+};
+
 module.exports = {
   createCustomOrder,
   getCustomOrder,
   getAllUserCustomOrders,
   createOrderOffer,
   getAllTailorCustomOrders,
+  acceptOrderOffer,
+  declineOrderOffer,
 };
